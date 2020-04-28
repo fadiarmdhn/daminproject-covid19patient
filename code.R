@@ -16,6 +16,7 @@ patient$infection_order <- NULL
 patient$released_date <- NULL
 patient$deceased_date <- NULL
 patient$symptom_onset_date <- NULL
+patient$contact_number <- NULL
 
 # mengubah tipe data
 patient$patient_id = as.factor(patient$patient_id)
