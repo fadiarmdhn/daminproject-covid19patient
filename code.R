@@ -86,3 +86,18 @@ Cov_pred <- predict(Cov_ctree, newdata = testData)
 
 # Evaluating
 confusionMatrix(Cov_pred, testData$state)
+
+# Tuning Hyper-parameter
+accuracy_tune <- function(fit) {
+  predict_unseen <- predict(fit, testData, type = 'class')
+  table_mat <- table(testData$state, predict_unseen)
+  accuracy_Test <- sum(diag(table_mat)) / sum(table_mat)
+  accuracy_Test
+}
+
+control <- ctree.control(minsplit = 10,
+                         minbucket = round(5 / 3),
+                         maxdepth = 5,
+                         cp = 0)
+tune_fit <- ctree(myFormula, data = trainData, method = 'class', control = control)
+accuracy_tune(tune_fit)
