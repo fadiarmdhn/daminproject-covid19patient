@@ -63,3 +63,26 @@ patient$disease[is.na(patient$disease)] <- "unknown"
 
 summary(patient)
 
+# Confusion Matrix
+library(caret)
+# CTree
+library(party)
+
+# Sampling
+set.seed(423)
+ind <- sample(2, nrow(DataF), replace = TRUE, prob = c(0.7, 0.3))
+trainData <- patient[ind==1,]
+testData <- patient[ind==2,]
+
+# Modelling
+myFormula <- state ~ sex + age + country + province + infection_case + infected_by
+Cov_ctree <- ctree(myFormula, data = trainData, controls = ctree_control(minsplit = 10, maxdepth = 5))
+
+# Plotting
+plot(Cov_ctree, type="simple")
+
+# Predicting
+Cov_pred <- predict(Cov_ctree, newdata = testData)
+
+# Evaluating
+confusionMatrix(Cov_pred, testData$state)
