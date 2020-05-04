@@ -1,47 +1,51 @@
 # LOAD DATASET
-patient <- read.csv("PatientInfo.csv", header = TRUE, sep = ",", na.strings=c(""," ","NA"))
+patient <- read.csv("PatientInfonew.csv", header = TRUE, sep = ",", na.strings=c(""," ","NA"))
 
-# EKSPLORASI
+# Eksplorasi Data
 str(patient)
 summary(patient)
-
-which(is.na(patient$country))
+levels(patient$infection_case)
+levels(patient$province)
+levels(patient$country)
 
 # PRAPROSES
+# Mengubah tipe data
+patient$patient_id = as.factor(patient$patient_id)
+patient$infected_by = as.factor(patient$infected_by)
+patient$symptom_onset_date = as.Date(patient$symptom_onset_date)
+patient$confirmed_date = as.Date(patient$confirmed_date, "%Y-%m-%d")
+patient$released_date = as.Date(patient$released_date)
+patient$deceased_date = as.Date(patient$deceased_date)
+patient$global_num = as.factor(patient$global_num)
+patient$disease = as.factor(patient$disease)
+
+# menghapus instances yang tidak memiliki confirmed_date
+patient<-patient[-which(is.na(patient$confirmed_date)),]
+
 # penghapusan atribut
 patient$global_num <- NULL
-patient$birth_year <- NULL
 patient$city <- NULL
 patient$infection_order <- NULL
 patient$released_date <- NULL
 patient$deceased_date <- NULL
 patient$symptom_onset_date <- NULL
-patient$contact_number <- NULL
+patient$contact_number <-NULL
 
-# mengubah tipe data
-patient$patient_id = as.factor(patient$patient_id)
-patient$infected_by = as.factor(patient$infected_by)
-patient$disease = as.factor(patient$disease)
+# Mencari usia pasien berdasarkan birth_year (tahun lahir)
+patient$age <- NULL
+patient$birth_year[is.na(patient$birth_year)] <- floor(mean(patient$birth_year, na.rm=TRUE))
+patient$infection_case[is.na(patient$infection_case)] <- names(sort(-table(patient$infection_case))[1])
 
-#patient$sex <- factor(patient$sex, levels=c(0,1), labels=c("male","female"))
-#patient$confirmed_date = as.factor(patient$confirmed_date)
-#patient$disease[is.na(patient$disease)] <- "unknown"
+n <- nrow(patient)
 
-# penanganan missing value
-# untuk atribut contact_number
-# masih binguuuung
-#patient$contact_number[is.na(patient$contact_number)] <- -99
+for(i in 1:n) {
+  today <- 2020
+  patient$birth_year[i] = today - patient$birth_year[i]
+}
+names(patient)[names(patient) == "birth_year"] <- "age"
 
-# untuk atribut age
-names(which.max(table(patient$age, useNA = "no")))
-patient$age[is.na(patient$age)] <- names(sort(-table(patient$age))[1])
-patient$country[is.na(patient$country)] <- names(sort(-table(patient$country))[1])
-
-# untuk atribut infection_case
-levels_1 <- levels(patient$infection_case)
-levels_1[length(levels_1) + 1] <- "unknown"
-patient$infection_case <- factor(patient$infection_case, levels = levels_1)
-patient$infection_case[is.na(patient$infection_case)] <- "unknown"
+summary(patient)
+str(patient)
 
 # untuk atribut infected_by
 levels_2 <- levels(patient$infected_by)
@@ -61,7 +65,16 @@ levels_4[length(levels_4) + 1] <- "unknown"
 patient$disease <- factor(patient$disease, levels = levels_4)
 patient$disease[is.na(patient$disease)] <- "unknown"
 
+# menambahkan atribut numDays pada dataset
+patient$numDays <-as.Date("2020-04-30","%Y-%m-%d")-
+  as.Date((patient$confirmed_date),"%Y-%m-%d")
+  
+as.numeric(patient$numDays)
+
+str(patient)
 summary(patient)
+
+# myFormula <- state ~ sex + age + country + province + disease + infection_case + infected_by + numDays
 
 # Confusion Matrix
 library(caret)
