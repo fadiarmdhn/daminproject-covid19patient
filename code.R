@@ -31,11 +31,14 @@ patient$deceased_date <- NULL
 patient$symptom_onset_date <- NULL
 patient$contact_number <-NULL
 
-# Mencari usia pasien berdasarkan birth_year (tahun lahir)
-patient$age <- NULL
-patient$birth_year[is.na(patient$birth_year)] <- floor(mean(patient$birth_year, na.rm=TRUE))
+# mengisi missing value pada atribut infection_case dengan modus
 patient$infection_case[is.na(patient$infection_case)] <- names(sort(-table(patient$infection_case))[1])
+# menghapus atribut age
+patient$age <- NULL
+# mengisi missing value pada atribut birth_year dengan mean
+patient$birth_year[is.na(patient$birth_year)] <- floor(mean(patient$birth_year, na.rm=TRUE))
 
+### Mencari usia pasien berdasarkan birth_year (tahun lahir) ###
 n <- nrow(patient)
 
 for(i in 1:n) {
@@ -47,27 +50,27 @@ names(patient)[names(patient) == "birth_year"] <- "age"
 summary(patient)
 str(patient)
 
-# untuk atribut infected_by
+# mengisi missing value;
+# pada atribut infected_by
 levels_2 <- levels(patient$infected_by)
 levels_2[length(levels_2) + 1] <- "unknown"
 patient$infected_by <- factor(patient$infected_by, levels = levels_2)
 patient$infected_by[is.na(patient$infected_by)] <- "unknown"
 
-# untuk atribut sex
+# pada atribut sex
 levels_3 <- levels(patient$sex)
 levels_3[length(levels_3) + 1] <- "decline to state"
 patient$sex <- factor(patient$sex, levels = levels_3)
 patient$sex[is.na(patient$sex)] <- "decline to state"
 
-# untuk atribut disease
+# pada atribut disease
 levels_4 <- levels(patient$disease)
 levels_4[length(levels_4) + 1] <- "unknown"
 patient$disease <- factor(patient$disease, levels = levels_4)
 patient$disease[is.na(patient$disease)] <- "unknown"
 
 # menambahkan atribut numDays pada dataset
-patient$numDays <-as.Date("2020-04-30","%Y-%m-%d")-
-  as.Date((patient$confirmed_date),"%Y-%m-%d")
+patient$numDays <- as.Date("2020-04-30","%Y-%m-%d") - as.Date((patient$confirmed_date),"%Y-%m-%d")
   
 as.numeric(patient$numDays)
 
