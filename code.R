@@ -72,16 +72,14 @@ patient$disease[is.na(patient$disease)] <- "unknown"
 # menambahkan atribut numDays pada dataset
 patient$numDays <- as.Date("2020-04-30","%Y-%m-%d") - as.Date((patient$confirmed_date),"%Y-%m-%d")
   
-as.numeric(patient$numDays)
+patient$numDays <- as.numeric(patient$numDays)
 
 str(patient)
 summary(patient)
 
-# myFormula <- state ~ sex + age + country + province + disease + infection_case + infected_by + numDays
-
-# Confusion Matrix
+# Library for Confusion Matrix
 library(caret)
-# CTree
+# Library for CTree
 library(party)
 
 # Sampling
@@ -91,7 +89,7 @@ trainData <- patient[ind==1,]
 testData <- patient[ind==2,]
 
 # Modelling
-myFormula <- state ~ sex + age + country + province + infection_case + infected_by
+myFormula <- state ~ sex + age + country + province + infection_case + numDays
 Cov_ctree <- ctree(myFormula, data = trainData, controls = ctree_control(minsplit = 10, maxdepth = 5))
 
 # Plotting
@@ -105,15 +103,16 @@ confusionMatrix(Cov_pred, testData$state)
 
 # Tuning Hyper-parameter
 accuracy_tune <- function(fit) {
-  predict_unseen <- predict(fit, testData, type = 'class')
+  predict_unseen <- predict(fit, testData)
   table_mat <- table(testData$state, predict_unseen)
   accuracy_Test <- sum(diag(table_mat)) / sum(table_mat)
   accuracy_Test
 }
 
 control <- ctree.control(minsplit = 10,
-                         minbucket = round(5 / 3),
-                         maxdepth = 5,
-                         cp = 0)
-tune_fit <- ctree(myFormula, data = trainData, method = 'class', control = control)
+                         minbucket = round(10 / 3),
+                         maxdepth = 5)
+tune_fit <- ctree(myFormula, data = trainData, control = control)
 accuracy_tune(tune_fit)
+
+plot(tune_fit, type="simple")
